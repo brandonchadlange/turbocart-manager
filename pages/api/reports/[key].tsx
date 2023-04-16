@@ -24,7 +24,7 @@ const getProductUtilizationReport = async (
 
   const productsPerDay = await prismaClient.orderItem.groupBy({
     by: ["productId"],
-    _count: {
+    _sum: {
       quantity: true,
     },
     orderBy: {
@@ -59,12 +59,12 @@ const getProductUtilizationReport = async (
           item = response[response.length - 1];
         }
 
-        item.quantity += e._count.quantity;
+        item.quantity += e._sum.quantity;
       });
     } else {
       response.push({
         product,
-        quantity: e._count.quantity,
+        quantity: e._sum.quantity,
       });
     }
   });
