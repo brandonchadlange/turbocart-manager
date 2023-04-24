@@ -1,7 +1,7 @@
 import TableComponent, { DataTableColumn } from "@/components/data-table/table";
 import DateFormat from "@/components/date";
 import ApplicationLayout from "@/components/layouts/application";
-import { Text } from "@mantine/core";
+import { Card, Text } from "@mantine/core";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useQuery } from "react-query";
@@ -27,7 +27,28 @@ const OrderDetails = () => {
   const columns: DataTableColumn<any>[] = [
     {
       heading: "Item",
-      component: (row) => row.id,
+      component: (row) => row.product.name,
+    },
+    {
+      heading: "Student",
+      component: (row) =>
+        row.OrderBatch.studentFirstName + " " + row.OrderBatch.studentLastName,
+    },
+    {
+      heading: "Grade",
+      component: (row) => row.OrderBatch.studentGrade,
+    },
+    {
+      heading: "Date",
+      component: (row) => row.OrderBatch.dateId,
+    },
+    {
+      heading: "Period",
+      component: (row) => row.OrderBatch.menuId,
+    },
+    {
+      heading: "Qty",
+      component: (row) => row.quantity,
     },
   ];
 
@@ -43,7 +64,9 @@ const OrderDetails = () => {
           <Text>
             Date: <DateFormat>{order?.createdAt}</DateFormat>
           </Text>
-          <TableComponent columns={columns} data={order?.OrderItem || []} />
+          <Card withBorder mt="md" p={0}>
+            <TableComponent columns={columns} data={order?.OrderItem || []} />
+          </Card>
         </>
       )}
     </ApplicationLayout>

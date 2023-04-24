@@ -13,8 +13,6 @@ export default RouteHandler({
     switch (event) {
       case "organization.created":
         {
-          console.log("Organization Created");
-
           const data = req.body.data as any;
 
           await prismaClient.merchant.create({
@@ -30,8 +28,6 @@ export default RouteHandler({
         break;
       case "organization.updated":
         {
-          console.log("Organization Updated");
-
           const data = req.body.data as any;
 
           await prismaClient.merchant.update({
@@ -46,8 +42,6 @@ export default RouteHandler({
         break;
       case "organization.deleted":
         {
-          console.log("Organization Deleted");
-
           const data = req.body.data as any;
 
           await prismaClient.merchant.deleteMany({
