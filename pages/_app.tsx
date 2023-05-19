@@ -1,10 +1,11 @@
+import { ModuleStateProvider } from "@/frontend/providers/module";
 import "@/styles/globals.css";
-import type { AppProps } from "next/app";
+import { ClerkProvider } from "@clerk/nextjs";
 import { MantineProvider } from "@mantine/core";
-import { NotificationsProvider } from "@mantine/notifications";
-import { QueryClient, QueryClientProvider } from "react-query";
 import { ModalsProvider } from "@mantine/modals";
-import { AuthenticateWithRedirectCallback, ClerkProvider } from "@clerk/nextjs";
+import { NotificationsProvider } from "@mantine/notifications";
+import type { AppProps } from "next/app";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 const App = ({ Component, pageProps }: AppProps) => {
   const queryClient = new QueryClient();

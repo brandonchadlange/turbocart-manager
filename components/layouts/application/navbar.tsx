@@ -1,3 +1,4 @@
+import { useModuleState } from "@/frontend/providers/module";
 import { SignInButton, useAuth, useUser } from "@clerk/nextjs";
 import {
   Anchor,
@@ -10,9 +11,12 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import {
+  IconBox,
   IconChecklist,
   IconCreditCard,
   IconMenuOrder,
+  IconPackages,
+  IconSettings,
   IconShoppingCart,
 } from "@tabler/icons";
 import Link from "next/link";
@@ -80,9 +84,27 @@ const ApplicationNavbar = () => {
           color="violet"
         />
         <NavbarLink
+          label="Listings"
+          href="/listings"
+          icon={<IconPackages size="1rem" />}
+          color="violet"
+        />
+        {/* <NavbarLink
+          label="Products"
+          href="/products"
+          icon={<IconBox size="1rem" />}
+          color="violet"
+        /> */}
+        <NavbarLink
           label="Payment Methods"
           href="/payment-methods"
           icon={<IconCreditCard size="1rem" />}
+          color="violet"
+        />
+        <NavbarLink
+          label="Settings"
+          href="/settings"
+          icon={<IconSettings size="1rem" />}
           color="violet"
         />
       </Navbar.Section>

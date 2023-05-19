@@ -1,13 +1,14 @@
-import { AppShell, Flex, Header } from "@mantine/core";
-import Head from "next/head";
-import { ReactNode } from "react";
-import ApplicationNavbar from "./navbar";
 import {
   OrganizationSwitcher,
   RedirectToSignIn,
   UserButton,
   useAuth,
 } from "@clerk/nextjs";
+import { AppShell, Flex, Header } from "@mantine/core";
+import Head from "next/head";
+import { ReactNode } from "react";
+import ApplicationNavbar from "./navbar";
+import NotificationMenu from "./notification-menu";
 
 export type ApplicationLayoutProps = {
   children: ReactNode;
@@ -40,7 +41,10 @@ const ApplicationLayout = (props: ApplicationLayoutProps) => {
           <Header height={55} p="xs">
             <Flex justify="space-between">
               <OrganizationSwitcher hidePersonal />
-              <UserButton />
+              <Flex gap="lg" align="center">
+                <NotificationMenu />
+                <UserButton />
+              </Flex>
             </Flex>
             {/* Header content */}
           </Header>

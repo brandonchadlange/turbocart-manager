@@ -20,8 +20,6 @@ export default RouteHandler({
               id: data.slug,
               name: data.name,
               clerkId: data.id,
-              yocoPrivateKey: "",
-              yocoPublicKey: "",
             },
           });
         }

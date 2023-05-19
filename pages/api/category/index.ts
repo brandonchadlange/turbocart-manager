@@ -6,16 +6,12 @@ export default RouteHandler({
   async GET(req, res) {
     const { orgSlug } = getAuth(req);
 
-    const orders = await prismaClient.order.findMany({
+    const categories = await prismaClient.category.findMany({
       where: {
         merchantId: orgSlug!,
-        isComplete: false,
-      },
-      orderBy: {
-        createdAt: "desc",
       },
     });
-    res.send(orders);
+
+    res.send(categories);
   },
-  async POST(req, res) {},
 });

@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 export type DataTableColumn<T = any> = {
   component: (data: T) => ReactNode;
   heading: string;
+  width?: string;
 };
 
 type TableComponentProps<T = any> = {
@@ -14,9 +15,17 @@ type TableComponentProps<T = any> = {
 const TableComponent = (props: TableComponentProps<any>) => {
   const { columns, data } = props;
 
-  const headings = columns.map((column, columnIndex) => (
-    <th key={columnIndex}>{column.heading}</th>
-  ));
+  const headings = columns.map((column, columnIndex) => {
+    const headingStyles = {
+      width: column.width,
+    };
+
+    return (
+      <th style={headingStyles} key={columnIndex}>
+        {column.heading}
+      </th>
+    );
+  });
 
   const rows = data.map((row, rowIndex) => {
     const rowData = columns.map((column, columnIndex) => {

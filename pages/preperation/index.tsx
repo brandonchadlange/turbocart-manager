@@ -1,5 +1,6 @@
 import TableComponent, { DataTableColumn } from "@/components/data-table/table";
 import ApplicationLayout from "@/components/layouts/application";
+import queries from "@/frontend/queries";
 import { useOrganization } from "@clerk/nextjs";
 import {
   ActionIcon,
@@ -14,7 +15,7 @@ import { DatePicker } from "@mantine/dates";
 import { IconPrinter } from "@tabler/icons";
 import axios from "axios";
 import { DateTime } from "luxon";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 
 const getProductUtilizationReport = async (date: Date, period: string) => {
@@ -29,7 +30,22 @@ const getProductUtilizationReport = async (date: Date, period: string) => {
 const ProductPreperationReport = () => {
   const { organization, isLoaded } = useOrganization();
   const [date, setDate] = useState(new Date());
-  const [period, setPeriod] = useState("breakfast");
+  const [period, setPeriod] = useState("");
+
+  const menuQuery = useQuery("menu", queries.fetchMenus, {
+    initialData: [],
+  });
+
+  const menuSelectItems: SelectItem[] = menuQuery.data!.map((e) => ({
+    value: e.id,
+    label: e.name,
+  }));
+
+  useEffect(() => {
+    if (menuQuery.data && menuQuery.data.length > 0) {
+      setPeriod(menuQuery.data[0].id);
+    }
+  }, [menuQuery.data?.length]);
 
   const productUtilizationQuery = useQuery<any[]>(
     [["product-utilization", organization], date, period],
@@ -38,21 +54,6 @@ const ProductPreperationReport = () => {
       enabled: isLoaded,
     }
   );
-
-  const periods: SelectItem[] = [
-    {
-      value: "breakfast",
-      label: "Breakfast",
-    },
-    {
-      value: "first-break",
-      label: "First Break",
-    },
-    {
-      value: "aftercare",
-      label: "Aftercare",
-    },
-  ];
 
   const columns: DataTableColumn[] = [
     {
@@ -152,7 +153,7 @@ const ProductPreperationReport = () => {
             value={period}
             onChange={(e) => setPeriod(e!)}
             label="Period"
-            data={periods}
+            data={menuSelectItems}
           ></Select>
         </Grid.Col>
         <Grid.Col span={1}></Grid.Col>

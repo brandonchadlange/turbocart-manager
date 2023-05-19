@@ -1,6 +1,5 @@
 import prismaClient from "@/backend/db";
 import { RouteHandler } from "@/backend/utility/route-handler";
-import products from "@/backend/data/products";
 import { getAuth } from "@clerk/nextjs/server";
 
 export default RouteHandler({
@@ -43,30 +42,23 @@ const getProductUtilizationReport = async (
     },
   });
 
+  const listingIdList = productsPerDay.map((e) => e.productId);
+
+  const listings = await prismaClient.listing.findMany({
+    where: {
+      id: {
+        in: listingIdList,
+      },
+    },
+  });
+
   productsPerDay.forEach((e) => {
-    const product = products.find((p) => p.id === e.productId)!;
+    const product = listings.find((p) => p.id === e.productId)!;
 
-    if (product.recipe.length > 0) {
-      product.recipe.forEach((rp) => {
-        var item = response.find((e) => e.product.id === rp.id);
-
-        if (item === undefined || item === null) {
-          response.push({
-            product: rp,
-            quantity: 0,
-          });
-
-          item = response[response.length - 1];
-        }
-
-        item.quantity += e._sum.quantity;
-      });
-    } else {
-      response.push({
-        product,
-        quantity: e._sum.quantity,
-      });
-    }
+    response.push({
+      product,
+      quantity: e._sum.quantity,
+    });
   });
 
   return response;

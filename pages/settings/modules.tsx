@@ -5,8 +5,8 @@ import { Card, Center, Grid, Stack, UnstyledButton } from "@mantine/core";
 const Settings = () => {
   return (
     <ApplicationLayout>
-      <SettingsTab selected="general" />
-      <h1>Settings Page</h1>
+      <SettingsTab selected="modules" />
+      <h1>Modules</h1>
     </ApplicationLayout>
   );
 };

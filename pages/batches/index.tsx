@@ -1,28 +1,28 @@
-import { DataTableColumn } from "@/components/data-table";
 import ApplicationLayout from "@/components/layouts/application";
+import queries from "@/frontend/queries";
 import { useOrganization } from "@clerk/nextjs";
 import {
-  ActionIcon,
   Badge,
   Button,
   Card,
   Checkbox,
   Flex,
   Grid,
+  Menu,
   Select,
   SelectItem,
   Stack,
-  Switch,
   Table,
   Text,
   TextInput,
 } from "@mantine/core";
 import { DatePicker } from "@mantine/dates";
-import { OrderBatch } from "@prisma/client";
-import { IconPrinter } from "@tabler/icons";
+import { useModals } from "@mantine/modals";
+import { showNotification } from "@mantine/notifications";
+import { IconBolt, IconFileDescription, IconTags } from "@tabler/icons";
 import axios from "axios";
 import { DateTime } from "luxon";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 
 const getBatches = async (date: Date, period: string, search: string) => {
@@ -41,10 +41,27 @@ const getBatches = async (date: Date, period: string, search: string) => {
 };
 
 const Batches = () => {
+  const modals = useModals();
   const { organization } = useOrganization();
   const [date, setDate] = useState(new Date());
-  const [period, setPeriod] = useState("breakfast");
+  const [period, setPeriod] = useState("");
   const [search, setSearch] = useState("");
+
+  const menuQuery = useQuery("menu", queries.fetchMenus, {
+    initialData: [],
+  });
+
+  const menuSelectItems: SelectItem[] = menuQuery.data!.map((e) => ({
+    value: e.id,
+    label: e.name,
+  }));
+
+  useEffect(() => {
+    if (menuQuery.data && menuQuery.data.length > 0) {
+      setPeriod(menuQuery.data[0].id);
+    }
+  }, [menuQuery.data?.length]);
+
   const batchQuery = useQuery<any[]>(
     [["batch-list", organization], date, period, search],
     () => getBatches(date, period, search)
@@ -58,47 +75,28 @@ const Batches = () => {
     await batchQuery.refetch();
   };
 
-  const columns: DataTableColumn<OrderBatch>[] = [
-    {
-      heading: "Date",
-      component: (data) => data.dateId,
-    },
-    {
-      heading: "Period",
-      component: (data) => data.menuId,
-    },
-    {
-      heading: "Student",
-      component: (data) => `${data.studentFirstName} ${data.studentLastName}`,
-    },
-    {
-      heading: "Grade",
-      component: (data) => data.studentGrade,
-    },
-    {
-      heading: "Status",
-      component: (data) => (
-        <Badge size="sm" color="orange">
-          pending
-        </Badge>
-      ),
-    },
-  ];
+  const setBatchComplete = async (batch: any) => {
+    await axios.put(`/api/batch/${batch.id}/fulfilled`);
+    await batchQuery.refetch();
 
-  const periods: SelectItem[] = [
-    {
-      value: "breakfast",
-      label: "Breakfast",
-    },
-    {
-      value: "first-break",
-      label: "First Break",
-    },
-    {
-      value: "aftercare",
-      label: "Aftercare",
-    },
-  ];
+    showNotification({
+      title: "Success",
+      message: "Batched marked as complete!",
+      color: "green",
+    });
+  };
+
+  const promptForComplete = (batch: any) => {
+    modals.openConfirmModal({
+      centered: true,
+      title: "Are you sure?",
+      children: <Text size="sm">Batch will be marked as complete</Text>,
+      labels: { confirm: "Confirm", cancel: "Cancel" },
+      onConfirm() {
+        setBatchComplete(batch);
+      },
+    });
+  };
 
   const data = batchQuery.data || [];
 
@@ -147,6 +145,8 @@ const Batches = () => {
     printWindow?.close();
   };
 
+  const canPrint = data.length > 0;
+
   return (
     <ApplicationLayout>
       <h1>Batches</h1>
@@ -165,7 +165,7 @@ const Batches = () => {
             value={period}
             onChange={(e) => setPeriod(e!)}
             label="Period"
-            data={periods}
+            data={menuSelectItems}
           ></Select>
         </Grid.Col>
         <Grid.Col span={1}>
@@ -178,9 +178,29 @@ const Batches = () => {
         </Grid.Col>
         <Grid.Col span={1}>
           <Flex justify="end">
-            <ActionIcon variant="light" onClick={printLabels} mt="xl">
-              <IconPrinter />
-            </ActionIcon>
+            <Menu shadow="md" width={200} position="bottom-end">
+              <Menu.Target>
+                <Button mt="xl" variant="default" leftIcon={<IconBolt />}>
+                  Actions
+                </Button>
+                {/* <ActionIcon variant="light" mt="xl">
+                  <IconBolt />
+                </ActionIcon> */}
+              </Menu.Target>
+
+              <Menu.Dropdown>
+                <Menu.Item icon={<IconFileDescription />} disabled={!canPrint}>
+                  Print Report
+                </Menu.Item>
+                <Menu.Item
+                  icon={<IconTags />}
+                  onClick={printLabels}
+                  disabled={!canPrint}
+                >
+                  Print Labels
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
           </Flex>
         </Grid.Col>
       </Grid>
@@ -192,7 +212,7 @@ const Batches = () => {
               <th>Grade</th>
               <th>Order #</th>
               <th>Status</th>
-              <th>Complete</th>
+              <th style={{ width: "100px" }}></th>
             </tr>
           </thead>
           <tbody>
@@ -214,11 +234,18 @@ const Batches = () => {
                     </Badge>
                   </td>
                   <td style={{ backgroundColor: "#e7e7e7" }}>
-                    <Switch />
+                    <Button
+                      disabled={!batch.OrderItem.every((e: any) => e.packed)}
+                      size="xs"
+                      variant="default"
+                      onClick={() => promptForComplete(batch)}
+                    >
+                      Complete
+                    </Button>
                   </td>
                 </tr>
                 <tr>
-                  <td colSpan={4}>
+                  <td colSpan={5}>
                     <Stack spacing={5}>
                       {batch.OrderItem.map((item: any) => (
                         <Checkbox
@@ -228,7 +255,7 @@ const Batches = () => {
                           key={item.id}
                           label={
                             <Text>
-                              {item.quantity} x {item.product.name}
+                              {item.quantity} x {item.variant.name}
                             </Text>
                           }
                         />
@@ -236,6 +263,13 @@ const Batches = () => {
                     </Stack>
                   </td>
                 </tr>
+                {batch.Order.notes && (
+                  <tr>
+                    <td colSpan={5}>
+                      <Text size="xs">Notes: {batch.Order.notes}</Text>
+                    </td>
+                  </tr>
+                )}
               </>
             ))}
           </tbody>

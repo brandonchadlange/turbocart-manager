@@ -1,17 +1,31 @@
-declare type CreateListingRequest = {
+declare type Attribute = {
+  id: string;
   name: string;
-  description: string;
-  price: number;
-  selectedMenus: string[];
-  selectedCategories: string[];
 };
 
-declare type ListingItem = {
+declare type AttributeValue = {
   id: string;
+  attributeId: string;
+  value: string;
+};
+
+declare type Listing = {
+  id: string;
+  merchantId: string;
   name: string;
   description: string;
   priceInCents: number;
-  menus: string[];
+  published: boolean;
 };
 
-declare type ListingListResponse = ListResponse<ListingItem>;
+declare type Category = {
+  id: string;
+  name: string;
+};
+
+declare type ListingDetail = Listing & {
+  attributes: (Attribute & {
+    values: AttributeValue[];
+  })[];
+  categories: Category[];
+};

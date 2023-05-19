@@ -1,4 +1,3 @@
-import products from "@/backend/data/products";
 import prismaClient from "@/backend/db";
 import { RouteHandler } from "@/backend/utility/route-handler";
 import { getAuth } from "@clerk/nextjs/server";
@@ -29,13 +28,29 @@ export default RouteHandler({
             contains: search,
           },
         },
+        fulfilled: false,
       },
     })) as any[];
 
+    const variantIdList = batches
+      .map((e) => [...e.OrderItem.map((oi: any) => oi.variantId)])
+      .flat();
+
+    const variantsWithListings = await prismaClient.listingVariant.findMany({
+      where: {
+        id: {
+          in: variantIdList,
+        },
+      },
+      include: {
+        listing: true,
+      },
+    });
+
     batches.forEach((batch) => {
       batch.OrderItem.forEach((orderItem: any) => {
-        orderItem.product = products.find(
-          (e: any) => e.id === orderItem.productId
+        orderItem.variant = variantsWithListings.find(
+          (e: any) => e.id === orderItem.variantId
         );
       });
     });
