@@ -41,6 +41,10 @@ const ProductPreperationReport = () => {
     label: e.name,
   }));
 
+  const selectedMenuName = period.length
+    ? menuSelectItems.find((e) => e.value === period)?.label
+    : "";
+
   useEffect(() => {
     if (menuQuery.data && menuQuery.data.length > 0) {
       setPeriod(menuQuery.data[0].id);
@@ -76,7 +80,7 @@ const ProductPreperationReport = () => {
 
     printWindow!.document.body.style.fontFamily = "sans-serif";
 
-    const heading = printWindow!.document.createElement("h1");
+    const heading = printWindow!.document.createElement("h3");
     heading.innerText = "Order Preperation";
     heading.style.marginBottom = "10px";
 
@@ -91,7 +95,7 @@ const ProductPreperationReport = () => {
     dateText.style.margin = "0px";
 
     const periodText = printWindow!.document.createElement("p");
-    periodText.innerText = "Period: " + period;
+    periodText.innerText = "Period: " + selectedMenuName;
     periodText.style.margin = "0px";
     periodText.style.marginBottom = "20px";
 

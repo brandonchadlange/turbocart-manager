@@ -1,9 +1,17 @@
 import prismaClient from "@/backend/db";
 import { RouteHandler } from "@/backend/utility/route-handler";
+import { getAuth } from "@clerk/nextjs/server";
 
 export default RouteHandler({
   async GET(req, res) {
     const orderId = req.query.id as string;
+    const { orgSlug } = getAuth(req);
+
+    const menuList = await prismaClient.menu.findMany({
+      where: {
+        merchantId: orgSlug!,
+      },
+    });
 
     const order = await prismaClient.order.findFirst({
       where: {
@@ -32,8 +40,12 @@ export default RouteHandler({
     });
 
     order?.OrderItem.forEach((orderItem: any) => {
+      orderItem.OrderBatch.menu = menuList.find(
+        (e) => e.id === orderItem.OrderBatch.menuId
+      );
+
       orderItem.product = variantsWithListing.find(
-        (variant) => variant.listingId === orderItem.variantId
+        (variant) => variant.id === orderItem.variantId
       );
     });
 

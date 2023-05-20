@@ -63,7 +63,7 @@ const OrderDetails = () => {
   const columns: DataTableColumn<any>[] = [
     {
       heading: "Item",
-      component: (row) => row.productId,
+      component: (row) => row.product.name,
     },
     {
       heading: "Student",
@@ -80,7 +80,7 @@ const OrderDetails = () => {
     },
     {
       heading: "Period",
-      component: (row) => row.OrderBatch.menuId,
+      component: (row) => row.OrderBatch.menu.name,
     },
     {
       heading: "Qty",

@@ -101,11 +101,7 @@ const Batches = () => {
   const data = batchQuery.data || [];
 
   const printLabels = () => {
-    // const printWindow = window.open("", "", "width=200,height=100");
     const printWindow = window.open("", "");
-    // printWindow?.document.write("<p>Hello World!</p>");
-    // printWindow?.document.close();
-
     const grid = printWindow!.document.createElement("div");
     grid.style.display = "grid";
     grid.style.gridTemplateColumns = "repeat(3, 1fr)";
@@ -120,7 +116,7 @@ const Batches = () => {
 
       const orderItems = batch.OrderItem.map(
         (orderItem: any) => `
-        <p ${textStyle}>${orderItem.quantity} x ${orderItem.product.name}</p>
+        <p ${textStyle}>${orderItem.quantity} x ${orderItem.variant.name}</p>
       `
       );
 
@@ -139,6 +135,91 @@ const Batches = () => {
     });
 
     printWindow?.document.body.append(grid);
+
+    printWindow?.focus();
+    printWindow?.print();
+    printWindow?.close();
+  };
+
+  const printReport = () => {
+    const printWindow = window.open("", "");
+
+    printWindow!.document.body.style.fontFamily = "sans-serif";
+
+    const heading = printWindow!.document.createElement("h3");
+    heading.innerText = "Order Batch Report";
+    heading.style.marginBottom = "10px";
+
+    const dateFormatted = DateTime.fromJSDate(new Date(date)).toLocaleString({
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    const dateText = printWindow!.document.createElement("p");
+    dateText.innerText = "Date: " + dateFormatted;
+    dateText.style.margin = "0px";
+
+    const periodText = printWindow!.document.createElement("p");
+    periodText.innerText =
+      "Period: " + menuSelectItems.find((e) => e.value === period)?.label;
+    periodText.style.margin = "0px";
+    periodText.style.marginBottom = "20px";
+
+    printWindow?.document.body.append(heading, dateText, periodText);
+
+    const table = printWindow!.document.createElement("table");
+    table.style.width = "100%";
+    table.setAttribute("border", "1");
+    table.style.borderCollapse = "collapse";
+    table.style.fontFamily = "sans-serif";
+    const thead = printWindow!.document.createElement("thead");
+    thead.innerHTML = `
+    <tr>
+      <th style="padding: 4px; text-align: left;">Student</th>
+      <th style="padding: 4px; text-align: left;">Grade</th>
+      <th style="padding: 4px; text-align: left;">Order #</th>
+    </tr>`;
+
+    table.append(thead);
+
+    const tableBody = printWindow!.document.createElement("tbody");
+
+    data.forEach((item, index) => {
+      const tmpRow = printWindow!.document.createElement("tr");
+
+      tmpRow.innerHTML = `
+        <td style="padding: 4px; background-color: rgb(231, 231, 231);">${item.studentFirstName} ${item.studentLastName}</td>
+        <td style="padding: 4px; background-color: rgb(231, 231, 231);">${item.studentGrade}</td>
+        <td style="padding: 4px; background-color: rgb(231, 231, 231);">${item.orderId}</td>`;
+
+      tableBody.append(tmpRow);
+
+      item.OrderItem.forEach((orderItem: any) => {
+        const tmpOrderItemRow = printWindow!.document.createElement("tr");
+
+        tmpOrderItemRow!.innerHTML = `
+        <td colspan="3">
+          ${orderItem.quantity} x ${orderItem.variant.name}
+        </td>`;
+
+        tableBody.append(tmpOrderItemRow);
+      });
+
+      if (item.Order.notes.length > 0) {
+        const tmpNotesRow = printWindow!.document.createElement("tr");
+
+        tmpNotesRow!.innerHTML = `
+        <td colspan="3">
+          Notes: ${item.Order.notes}
+        </td>`;
+
+        tableBody.append(tmpNotesRow);
+      }
+    });
+
+    table.append(tableBody);
+    printWindow?.document.body.append(table);
 
     printWindow?.focus();
     printWindow?.print();
@@ -183,13 +264,14 @@ const Batches = () => {
                 <Button mt="xl" variant="default" leftIcon={<IconBolt />}>
                   Actions
                 </Button>
-                {/* <ActionIcon variant="light" mt="xl">
-                  <IconBolt />
-                </ActionIcon> */}
               </Menu.Target>
 
               <Menu.Dropdown>
-                <Menu.Item icon={<IconFileDescription />} disabled={!canPrint}>
+                <Menu.Item
+                  icon={<IconFileDescription />}
+                  onClick={printReport}
+                  disabled={!canPrint}
+                >
                   Print Report
                 </Menu.Item>
                 <Menu.Item
