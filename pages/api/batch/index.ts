@@ -28,7 +28,6 @@ export default RouteHandler({
             contains: search,
           },
         },
-        fulfilled: false,
       },
     })) as any[];
 

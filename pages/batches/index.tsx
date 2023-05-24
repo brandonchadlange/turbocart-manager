@@ -311,19 +311,27 @@ const Batches = () => {
                     {batch.Order.id}
                   </td>
                   <td style={{ backgroundColor: "#e7e7e7" }}>
-                    <Badge size="sm" color="orange" variant="filled">
-                      pending
-                    </Badge>
+                    {batch.fulfilled ? (
+                      <Badge size="sm" color="green" variant="filled">
+                        fulfilled
+                      </Badge>
+                    ) : (
+                      <Badge size="sm" color="orange" variant="filled">
+                        pending
+                      </Badge>
+                    )}
                   </td>
                   <td style={{ backgroundColor: "#e7e7e7" }}>
-                    <Button
-                      disabled={!batch.OrderItem.every((e: any) => e.packed)}
-                      size="xs"
-                      variant="default"
-                      onClick={() => promptForComplete(batch)}
-                    >
-                      Complete
-                    </Button>
+                    {!batch.fulfilled && (
+                      <Button
+                        disabled={!batch.OrderItem.every((e: any) => e.packed)}
+                        size="xs"
+                        variant="default"
+                        onClick={() => promptForComplete(batch)}
+                      >
+                        Complete
+                      </Button>
+                    )}
                   </td>
                 </tr>
                 <tr>
@@ -332,7 +340,12 @@ const Batches = () => {
                       {batch.OrderItem.map((item: any) => (
                         <Checkbox
                           checked={item.packed}
-                          onChange={(e) => setItemPacked(item)}
+                          onChange={(e) => {
+                            if (batch.fulfilled) {
+                              return;
+                            }
+                            setItemPacked(item);
+                          }}
                           size="xs"
                           key={item.id}
                           label={

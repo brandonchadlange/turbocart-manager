@@ -9,7 +9,6 @@ export default RouteHandler({
     const orders = await prismaClient.order.findMany({
       where: {
         merchantId: orgSlug!,
-        isComplete: false,
       },
       orderBy: {
         createdAt: "desc",
