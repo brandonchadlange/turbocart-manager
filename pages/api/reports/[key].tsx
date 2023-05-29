@@ -22,7 +22,7 @@ const getProductUtilizationReport = async (
   const response: any[] = [];
 
   const productsPerDay = await prismaClient.orderItem.groupBy({
-    by: ["productId"],
+    by: ["variantId"],
     _sum: {
       quantity: true,
     },
@@ -42,18 +42,18 @@ const getProductUtilizationReport = async (
     },
   });
 
-  const listingIdList = productsPerDay.map((e) => e.productId);
+  const variantIdList = productsPerDay.map((e) => e.variantId);
 
-  const listings = await prismaClient.listing.findMany({
+  const variants = await prismaClient.listingVariant.findMany({
     where: {
       id: {
-        in: listingIdList,
+        in: variantIdList,
       },
     },
   });
 
   productsPerDay.forEach((e) => {
-    const product = listings.find((p) => p.id === e.productId)!;
+    const product = variants.find((v) => v.id === e.variantId)!;
 
     response.push({
       product,
