@@ -4,13 +4,14 @@ import ApplicationLayout from "@/components/layouts/application";
 import Money from "@/components/money";
 import orderService from "@/frontend/services/order";
 import { useOrganization } from "@clerk/nextjs";
-import { Anchor, Card, Space } from "@mantine/core";
+import { Anchor, Card, Space, Tabs } from "@mantine/core";
 import { Order } from "@prisma/client";
 import { DateTime } from "luxon";
 import Link from "next/link";
+import { useState } from "react";
 import { useQuery } from "react-query";
 
-const OrdersList = () => {
+const OrdersList = (props: { orderState: string }) => {
   const { organization, isLoaded } = useOrganization();
 
   const OrderTableColumns: DataTableColumn<Order>[] = [
@@ -48,8 +49,8 @@ const OrdersList = () => {
   ];
 
   const ordersQuery = useQuery(
-    ["order-list", organization],
-    orderService.fetchOrders,
+    ["order-list", organization, props.orderState],
+    () => orderService.fetchOrders(props.orderState),
     {
       enabled: isLoaded,
       initialData: [],
@@ -63,12 +64,20 @@ const OrdersList = () => {
 };
 
 const OrdersPage = () => {
+  const [orderState, setOrderState] = useState<string | null>("open");
+
   return (
     <ApplicationLayout>
       <h1>Orders</h1>
       <Space h={20} />
+      <Tabs value={orderState} onTabChange={setOrderState} mb="md">
+        <Tabs.List>
+          <Tabs.Tab value="open">Open</Tabs.Tab>
+          <Tabs.Tab value="complete">Complete</Tabs.Tab>
+        </Tabs.List>
+      </Tabs>
       <Card withBorder>
-        <OrdersList />
+        <OrdersList orderState={orderState!} />
       </Card>
     </ApplicationLayout>
   );
