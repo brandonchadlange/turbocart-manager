@@ -115,7 +115,7 @@ model OrderBatch {
 }
 
 model PaymentMethod {
-  id            String   @id
+  id            String   @id @default(cuid())
   merchantId    String
   name          String
   description   String
