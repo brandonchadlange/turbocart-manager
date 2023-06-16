@@ -7,6 +7,7 @@ import queries from "@/frontend/queries";
 import { useOrganization } from "@clerk/nextjs";
 import {
   ActionIcon,
+  Badge,
   Button,
   Card,
   Container,
@@ -27,10 +28,19 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useListState } from "@mantine/hooks";
 import { showNotification } from "@mantine/notifications";
-import { IconQuestionCircle, IconTrash } from "@tabler/icons";
+import { ListingVariant } from "@prisma/client";
+import { IconGripVertical, IconQuestionCircle, IconTrash } from "@tabler/icons";
+import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import {
+  DragDropContext,
+  Draggable,
+  Droppable,
+  OnDragEndResponder,
+} from "react-beautiful-dnd";
 import { useQuery, useQueryClient } from "react-query";
 
 type ListingDetailForm = {
@@ -235,9 +245,225 @@ const Categories = ({ listing }: { listing?: ListingDetail }) => {
   );
 };
 
-type VariantForm = {
-  name: string;
-  options: { name: string; additionalAmount: number }[];
+const Variants = ({ listing }: { listing?: ListingDetail }) => {
+  const listingVariantsQuery = useQuery(
+    ["listing-variants", listing],
+    () => queries.fetchListingVariants(listing!.id),
+    {
+      enabled: listing !== undefined,
+    }
+  );
+
+  const variants = listingVariantsQuery.data || [];
+  const [state, handlers] = useListState(variants);
+  const [modalOpened, setModalOpened] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [varinatId, setVariantId] = useState("");
+  const [modalMode, setModalMode] = useState<"create" | "update">("create");
+  const form = useForm({
+    initialValues: {
+      name: "",
+      additionalFee: 0,
+    },
+  });
+
+  const onModalClose = () => {
+    setModalOpened(false);
+    form.reset();
+  };
+
+  const onVariantManage = (variant: ListingVariant) => {
+    setVariantId(variant.id);
+    form.setFieldValue("name", variant.name);
+    form.setFieldValue(
+      "additionalFee",
+      variant.additionalFeeInCents === 0
+        ? 0
+        : variant.additionalFeeInCents / 100
+    );
+    setModalMode("update");
+    setModalOpened(true);
+  };
+
+  const onAddVariant = () => {
+    setModalMode("create");
+    setModalOpened(true);
+  };
+
+  const onFormSubmit = async (values: any) => {
+    setSaving(true);
+
+    const additionalFeeInCents = values.additionalFee
+      ? values.additionalFee * 100
+      : 0;
+
+    if (modalMode === "create") {
+      await axios.post(`/api/listing/${listing!.id}/variant`, {
+        name: values.name,
+        additionalFeeInCents: additionalFeeInCents,
+      });
+    } else {
+      await axios.put(`/api/listing-variant/${varinatId}`, {
+        name: values.name,
+        additionalFeeInCents: additionalFeeInCents,
+      });
+    }
+
+    showNotification({
+      message:
+        "Variant successfully " +
+        (modalMode === "create" ? "created" : "updated"),
+      color: "green",
+    });
+
+    listingVariantsQuery.refetch();
+    setSaving(false);
+    onModalClose();
+  };
+
+  useEffect(() => {
+    handlers.setState(variants);
+  }, [variants]);
+
+  const onDragEnd: OnDragEndResponder = async ({ destination, source }) => {
+    handlers.reorder({
+      from: source.index,
+      to: destination?.index || 0,
+    });
+
+    const newOrderIds = state.map((e) => e.id);
+
+    await axios.put(
+      `/api/listing/${listing!.id}/variant/position`,
+      newOrderIds
+    );
+    listingVariantsQuery.refetch();
+  };
+
+  return (
+    <div>
+      <Flex justify="space-between" align="end">
+        <div>
+          <Title size={20}>Variants</Title>
+          <Text size="sm">Alternate versions of this listing</Text>
+        </div>
+        <Button onClick={onAddVariant} size="xs">
+          Add variant
+        </Button>
+      </Flex>
+      <Card withBorder mt="xs" style={{ overflow: "visible" }}>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="dnd-list" direction="vertical">
+            {(provided) => (
+              <div {...provided.droppableProps} ref={provided.innerRef}>
+                <Stack spacing="xs">
+                  {state.map((variant, index) => (
+                    <Draggable
+                      key={variant.id}
+                      index={index}
+                      draggableId={variant.id}
+                    >
+                      {(provided, snapshot) =>
+                        provided.innerRef && (
+                          <div
+                            //   className={cx(classes.item, { [classes.itemDragging]: snapshot.isDragging })}
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                          >
+                            <Card withBorder>
+                              <Flex justify="space-between" align="center">
+                                <Flex align="center" gap="xs">
+                                  <div {...provided.dragHandleProps}>
+                                    <IconGripVertical
+                                      size="1.05rem"
+                                      stroke={1.5}
+                                    />
+                                  </div>
+                                  <Text size="sm">{variant.name}</Text>
+                                  {variant.additionalFeeInCents > 0 && (
+                                    <Badge
+                                      variant="outline"
+                                      size="sm"
+                                      color="gray"
+                                    >
+                                      + R{variant.additionalFeeInCents / 100}
+                                    </Badge>
+                                  )}
+                                </Flex>
+                                <Button
+                                  onClick={() => onVariantManage(variant)}
+                                  size="xs"
+                                  variant="default"
+                                >
+                                  Manage
+                                </Button>
+                              </Flex>
+                            </Card>
+                          </div>
+                        )
+                      }
+                    </Draggable>
+                  ))}
+                </Stack>
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+        {/* <Card.Section
+          bg="#fafafa"
+          px="md"
+          py="xs"
+          mt="md"
+          style={{ borderTop: "1px solid #dee2e6" }}
+        >
+          <Flex justify="end">
+            <Button
+              size="xs"
+              variant="default"
+              // onClick={updateSelectedCategories}
+              // loading={loading}
+            >
+              Update
+            </Button>
+          </Flex>
+        </Card.Section> */}
+      </Card>
+      <Modal
+        title={
+          <Text size="md" weight="bold">
+            {modalMode === "create" ? "Add variant" : "Manage variant"}
+          </Text>
+        }
+        centered
+        withCloseButton={false}
+        opened={modalOpened}
+        onClose={onModalClose}
+      >
+        <form onSubmit={form.onSubmit(onFormSubmit)}>
+          <Stack>
+            <TextInput
+              {...form.getInputProps("name")}
+              required
+              label="Variant name"
+            />
+            <NumberInput
+              {...form.getInputProps("additionalFee")}
+              label="Additional fee"
+            />
+            <Flex gap="xs" justify="end">
+              <Button onClick={onModalClose} variant="default">
+                Cancel
+              </Button>
+              <Button loading={saving} type="submit">
+                Save
+              </Button>
+            </Flex>
+          </Stack>
+        </form>
+      </Modal>
+    </div>
+  );
 };
 
 export default function MenuItems() {
@@ -258,6 +484,7 @@ export default function MenuItems() {
         <Stack spacing="xl">
           <Details listing={listingQuery.data} />
           <Categories listing={listingQuery.data} />
+          <Variants listing={listingQuery.data} />
         </Stack>
       </Container>
     </ApplicationLayout>

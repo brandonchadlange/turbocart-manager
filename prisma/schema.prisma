@@ -175,11 +175,13 @@ model Listing {
 }
 
 model ListingVariant {
-  id        String  @id @default(cuid())
-  listingId String
-  name      String
-  isDefault Boolean
-  listing   Listing @relation(fields: [listingId], references: [id])
+  id                   String  @id @default(cuid())
+  listingId            String
+  name                 String
+  isDefault            Boolean
+  position             Int     @default(-1)
+  additionalFeeInCents Int     @default(0)
+  listing              Listing @relation(fields: [listingId], references: [id])
 
   @@index([listingId], map: "ListingVariant_listingId_fkey")
 }

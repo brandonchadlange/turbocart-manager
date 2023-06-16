@@ -1,4 +1,4 @@
-import { Category, Listing, Menu } from "@prisma/client";
+import { Category, Listing, ListingVariant, Menu } from "@prisma/client";
 import axios from "axios";
 import Module from "module";
 
@@ -20,6 +20,8 @@ const queries = {
     applyFetch<string[]>(`/api/listing/${listingId}/product`)(),
   fetchListing: (listingId: string) =>
     applyFetch<ListingDetail>("/api/listing/" + listingId)(),
+  fetchListingVariants: (listingId: string) =>
+    applyFetch<ListingVariant[]>(`/api/listing/${listingId}/variant`)(),
   fetchMenus: applyFetch<Menu[]>("/api/menu"),
   fetchMenuCategories: (menuId: string) =>
     applyFetch<Menu[]>(`/api/menu/${menuId}/category`)(),
