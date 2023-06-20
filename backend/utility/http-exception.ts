@@ -1,10 +1,10 @@
-class HttpException {
+class HttpException<T = any> {
   private readonly _response;
   private readonly _status;
 
-  constructor(response: string | Record<string, any>, status: number) {
-    this._response = response;
-    this._status = status;
+  constructor(options: { response?: any; status: number }) {
+    this._response = options.response;
+    this._status = options.status;
   }
 
   get response() {
