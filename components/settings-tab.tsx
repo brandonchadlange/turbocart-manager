@@ -20,6 +20,9 @@ const SettingsTab = ({ selected }: { selected: string }) => {
         <Tabs.Tab value="general" icon={<IconCategory size="0.8rem" />}>
           General
         </Tabs.Tab>
+        <Tabs.Tab value="categories" icon={<IconCategory size="0.8rem" />}>
+          Categories
+        </Tabs.Tab>
         <Tabs.Tab value="menu" icon={<IconCategory size="0.8rem" />}>
           Menus
         </Tabs.Tab>

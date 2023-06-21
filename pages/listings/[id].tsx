@@ -1,3 +1,4 @@
+import DragAndDropList from "@/components/drag-and-drop-list";
 import ApplicationLayout from "@/components/layouts/application";
 import Money from "@/components/money";
 import { makeUpdateListingCategories } from "@/frontend/mutations/category";
@@ -325,18 +326,14 @@ const Variants = ({ listing }: { listing?: ListingDetail }) => {
     handlers.setState(variants);
   }, [variants]);
 
-  const onDragEnd: OnDragEndResponder = async ({ destination, source }) => {
-    handlers.reorder({
-      from: source.index,
-      to: destination?.index || 0,
-    });
-
-    const newOrderIds = state.map((e) => e.id);
+  const onDragEnd = async (data: ListingVariant[]) => {
+    const newOrderIds = data.map((e) => e.id);
 
     await axios.put(
       `/api/listing/${listing!.id}/variant/position`,
       newOrderIds
     );
+
     listingVariantsQuery.refetch();
   };
 
@@ -352,87 +349,39 @@ const Variants = ({ listing }: { listing?: ListingDetail }) => {
         </Button>
       </Flex>
       <Card withBorder mt="xs" style={{ overflow: "visible" }}>
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="dnd-list" direction="vertical">
-            {(provided) => (
-              <div {...provided.droppableProps} ref={provided.innerRef}>
-                <Stack spacing="xs">
-                  {state.map((variant, index) => (
-                    <Draggable
-                      key={variant.id}
-                      index={index}
-                      draggableId={variant.id}
-                    >
-                      {(provided, snapshot) =>
-                        provided.innerRef && (
-                          <div
-                            //   className={cx(classes.item, { [classes.itemDragging]: snapshot.isDragging })}
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                          >
-                            <Card withBorder>
-                              <Flex justify="space-between" align="center">
-                                <Flex align="center" gap="xs">
-                                  <div {...provided.dragHandleProps}>
-                                    <IconGripVertical
-                                      size="1.05rem"
-                                      stroke={1.5}
-                                    />
-                                  </div>
-                                  <Text size="sm">{variant.name}</Text>
-                                  {variant.additionalFeeInCents > 0 && (
-                                    <Badge
-                                      variant="outline"
-                                      size="sm"
-                                      color="gray"
-                                    >
-                                      + R{variant.additionalFeeInCents / 100}
-                                    </Badge>
-                                  )}
-                                </Flex>
-                                <Button
-                                  onClick={() => onVariantManage(variant)}
-                                  size="xs"
-                                  variant="default"
-                                >
-                                  Manage
-                                </Button>
-                              </Flex>
-                            </Card>
-                          </div>
-                        )
-                      }
-                    </Draggable>
-                  ))}
-                </Stack>
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
-        {/* <Card.Section
-          bg="#fafafa"
-          px="md"
-          py="xs"
-          mt="md"
-          style={{ borderTop: "1px solid #dee2e6" }}
-        >
-          <Flex justify="end">
-            <Button
-              size="xs"
-              variant="default"
-              // onClick={updateSelectedCategories}
-              // loading={loading}
-            >
-              Update
-            </Button>
-          </Flex>
-        </Card.Section> */}
+        <DragAndDropList
+          data={variants}
+          onDragEnd={onDragEnd}
+          DraggableNode={({ dragHandler, data: variant }) => (
+            <Card withBorder>
+              <Flex justify="space-between" align="center">
+                <Flex align="center" gap="xs">
+                  <div {...dragHandler}>
+                    <IconGripVertical size="1.05rem" stroke={1.5} />
+                  </div>
+                  <Text size="sm">{variant.name}</Text>
+                  {variant.additionalFeeInCents > 0 && (
+                    <Badge variant="outline" size="sm" color="gray">
+                      + R{variant.additionalFeeInCents / 100}
+                    </Badge>
+                  )}
+                </Flex>
+                <Button
+                  onClick={() => onVariantManage(variant)}
+                  size="xs"
+                  variant="default"
+                >
+                  Manage
+                </Button>
+              </Flex>
+            </Card>
+          )}
+        />
       </Card>
       <Modal
         title={
           <Text size="md" weight="bold">
-            {modalMode === "create" ? "Add variant" : "Manage variant"}
+            {modalMode === "create" ? "Add" : "Manage"} variant
           </Text>
         }
         centered

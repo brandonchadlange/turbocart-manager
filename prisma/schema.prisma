@@ -141,6 +141,7 @@ model Category {
   id                String            @id @default(cuid())
   merchantId        String
   name              String
+  rank              Int               @default(0)
   merchant          Merchant          @relation(fields: [merchantId], references: [id])
   listingCategories ListingCategory[]
   menuCategories    MenuCategory[]
