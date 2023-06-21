@@ -1,6 +1,6 @@
 import { Stack } from "@mantine/core";
 import { useListState } from "@mantine/hooks";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   DragDropContext,
   Draggable,
@@ -25,7 +25,20 @@ const DragAndDropList = ({
   DraggableNode,
   onDragEnd,
 }: DragAndDropListProps) => {
+  const [reordered, setReordered] = useState(false);
   const [listState, handlers] = useListState(data);
+  const currentListState = useRef(listState);
+
+  useEffect(() => {
+    if (currentListState.current == listState) return;
+
+    currentListState.current = listState;
+
+    if (onDragEnd && reordered) {
+      console.log("onDragEnd");
+      onDragEnd(listState);
+    }
+  }, [listState]);
 
   const onDragEndHandler: OnDragEndResponder = ({ source, destination }) => {
     handlers.reorder({
@@ -33,9 +46,7 @@ const DragAndDropList = ({
       to: destination?.index || 0,
     });
 
-    if (onDragEnd) {
-      onDragEnd(listState);
-    }
+    setReordered(true);
   };
 
   useEffect(() => {

@@ -11,6 +11,9 @@ export default RouteHandler({
       where: {
         merchantId: orgSlug!,
       },
+      orderBy: {
+        rank: "asc",
+      },
     });
 
     res.send(categories);
@@ -18,10 +21,17 @@ export default RouteHandler({
   async POST(req, res) {
     const { orgSlug } = getAuth(req);
 
+    const merchantCategoryCount = await prismaClient.category.count({
+      where: {
+        merchantId: orgSlug!,
+      },
+    });
+
     await prismaClient.category.create({
       data: {
         merchantId: orgSlug!,
         name: req.body.name,
+        rank: merchantCategoryCount + 1,
       },
     });
 

@@ -55,6 +55,12 @@ async function createCategory(payload: { name: string }) {
   await axios.post("/api/category", { name: payload.name });
 }
 
+async function updateCategory(payload: { categoryId: string; name: string }) {
+  await axios.put("/api/category/" + payload.categoryId, {
+    name: payload.name,
+  });
+}
+
 function useModalState(): ModalState {
   const [opened, setOpened] = useState(false);
 
@@ -122,7 +128,7 @@ const CategoryManagementModal = ({
     if (mode === "create") {
       await createCategory({ name: values.name });
     } else {
-      // await createCategory({ name: values.name });
+      await updateCategory({ categoryId: category!.id, name: values.name });
     }
 
     refetchCategories();
@@ -182,6 +188,12 @@ const CategoryManagement = () => {
     categoryManagementModal.open();
   };
 
+  const onReorder = async (categoriesSorted: Category[]) => {
+    const categoryIdListRanked = categoriesSorted.map((e) => e.id);
+    await axios.put("/api/category/rank", categoryIdListRanked);
+    refetchCategories();
+  };
+
   const refetchCategories = () => {
     categoryState.refetch();
   };
@@ -208,6 +220,7 @@ const CategoryManagement = () => {
         </Button>
       </Flex>
       <DragAndDropList
+        onDragEnd={onReorder}
         data={categoryState.categoryList.value}
         DraggableNode={({ dragHandler, data: category }) => (
           <Card withBorder py="xs">
