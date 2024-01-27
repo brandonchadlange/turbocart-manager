@@ -358,7 +358,7 @@ const Batches = () => {
                           key={item.id}
                           label={
                             <Text>
-                              {item.quantity} x {item.variant.name}
+                              {item.quantity} x {listingName(item)}
                             </Text>
                           }
                         />
