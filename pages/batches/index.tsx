@@ -100,6 +100,14 @@ const Batches = () => {
 
   const data = batchQuery.data || [];
 
+  const listingName = (orderItem: any) => {
+    if (orderItem.variant.isDefault) {
+      return orderItem.variant.name;
+    }
+
+    return `${orderItem.variant.listing.name} - ${orderItem.variant.name}`;
+  };
+
   const printLabels = () => {
     const printWindow = window.open("", "");
     const grid = printWindow!.document.createElement("div");
@@ -116,7 +124,7 @@ const Batches = () => {
 
       const orderItems = batch.OrderItem.map(
         (orderItem: any) => `
-        <p ${textStyle}>${orderItem.quantity} x ${orderItem.variant.name}</p>
+        <p ${textStyle}>${orderItem.quantity} x ${listingName(orderItem)}</p>
       `
       );
 
@@ -200,7 +208,7 @@ const Batches = () => {
 
         tmpOrderItemRow!.innerHTML = `
         <td colspan="3">
-          ${orderItem.quantity} x ${orderItem.variant.name}
+          ${orderItem.quantity} x ${listingName(orderItem)}
         </td>`;
 
         tableBody.append(tmpOrderItemRow);
