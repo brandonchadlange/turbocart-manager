@@ -1,51 +1,15 @@
 import TableComponent, { DataTableColumn } from "@/components/data-table/table";
 import DateFormat from "@/components/date";
 import ApplicationLayout from "@/components/layouts/application";
-import queries from "@/frontend/queries";
-import {
-  ActionIcon,
-  Card,
-  Flex,
-  Group,
-  Paper,
-  ScrollArea,
-  Space,
-  Stack,
-  Text,
-  TextInput,
-  Title,
-  TypographyStylesProvider,
-  createStyles,
-} from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { IconSend } from "@tabler/icons";
+import { Card, Space, Text, createStyles } from "@mantine/core";
 import axios from "axios";
-import { DateTime } from "luxon";
 import { useRouter } from "next/router";
-import { useRef, useState } from "react";
 import { useQuery } from "react-query";
 
 const fetchOrder = async (orderId: string) => {
   const response = await axios.get("/api/order/" + orderId);
   return response.data;
 };
-
-const useStyles = createStyles((theme) => ({
-  comment: {
-    padding: `${theme.spacing.lg} ${theme.spacing.xl}`,
-  },
-
-  body: {
-    paddingTop: theme.spacing.sm,
-    fontSize: theme.fontSizes.sm,
-  },
-
-  content: {
-    "& > p:last-child": {
-      marginBottom: 0,
-    },
-  },
-}));
 
 const OrderDetails = () => {
   const router = useRouter();
@@ -58,12 +22,20 @@ const OrderDetails = () => {
     }
   );
 
+  const listingName = (orderItem: any) => {
+    if (orderItem.isDefault) {
+      return orderItem.name;
+    }
+
+    return `${orderItem.listing.name} - ${orderItem.name}`;
+  };
+
   const order = orderQuery.data;
 
   const columns: DataTableColumn<any>[] = [
     {
       heading: "Item",
-      component: (row) => row.product.name,
+      component: (row) => listingName(row.product),
     },
     {
       heading: "Student",
