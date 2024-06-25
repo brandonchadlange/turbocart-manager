@@ -1,7 +1,7 @@
 import prismaClient from "@/backend/db";
 import { RouteHandler } from "@/backend/utility/route-handler";
 import {
-  CreateDomainAssociationCommand,
+  UpdateDomainAssociationCommand,
   GetDomainAssociationCommand,
   AmplifyClient,
 } from "@aws-sdk/client-amplify";
@@ -95,7 +95,7 @@ async function registerSubdomain(prefix: string) {
 
     const client = getAmplifyClient();
 
-    const command = new CreateDomainAssociationCommand({
+    const command = new UpdateDomainAssociationCommand({
       appId: "d20dx504t45pvk",
       domainName: "turbocart.co.za",
       subDomainSettings: [
@@ -107,7 +107,7 @@ async function registerSubdomain(prefix: string) {
       ],
     });
 
-    const response = await client.send(command);
+    await client.send(command);
   } catch (err) {
     console.log("Failed to register subdomain");
   }
