@@ -63,7 +63,13 @@ export default RouteHandler({
 });
 
 function getAmplifyClient() {
-  return new AmplifyClient();
+  return new AmplifyClient({
+    region: "eu-central-1",
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY as string,
+      secretAccessKey: process.env.AWS_SECRET_KEY as string,
+    },
+  });
 }
 
 async function getExistingDomainAssociationSubdomains() {
