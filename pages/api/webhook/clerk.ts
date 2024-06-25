@@ -91,7 +91,9 @@ async function getExistingDomainAssociationSubdomains() {
 async function registerSubdomain(prefix: string) {
   try {
     const existing = await getExistingDomainAssociationSubdomains();
-    const existingSettings = existing!.map((e) => e.subDomainSetting!);
+    const existingSettings = existing!
+      .map((e) => e.subDomainSetting!)
+      .filter((e) => e.prefix !== undefined);
 
     const client = getAmplifyClient();
 
