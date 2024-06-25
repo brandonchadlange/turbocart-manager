@@ -1,5 +1,10 @@
 import prismaClient from "@/backend/db";
 import { RouteHandler } from "@/backend/utility/route-handler";
+import {
+  CreateDomainAssociationCommand,
+  GetDomainAssociationCommand,
+  AmplifyClient,
+} from "@aws-sdk/client-amplify";
 
 type ClerkOrgEvent =
   | "organization.created"
@@ -22,6 +27,8 @@ export default RouteHandler({
               clerkId: data.id,
             },
           });
+
+          await registerSubdomain(data.slug);
         }
         break;
       case "organization.updated":
@@ -54,3 +61,48 @@ export default RouteHandler({
     res.status(200).send(true);
   },
 });
+
+function getAmplifyClient() {
+  return new AmplifyClient();
+}
+
+async function getExistingDomainAssociationSubdomains() {
+  const client = getAmplifyClient();
+
+  try {
+    const command = new GetDomainAssociationCommand({
+      appId: "d20dx504t45pvk",
+      domainName: "turbocart.co.za",
+    });
+
+    const response = await client.send(command);
+    return response.domainAssociation?.subDomains;
+  } catch (err) {
+    console.log("Failed to get domain associations");
+  }
+}
+
+async function registerSubdomain(prefix: string) {
+  try {
+    const existing = await getExistingDomainAssociationSubdomains();
+    const existingSettings = existing!.map((e) => e.subDomainSetting!);
+
+    const client = getAmplifyClient();
+
+    const command = new CreateDomainAssociationCommand({
+      appId: "d20dx504t45pvk",
+      domainName: "turbocart.co.za",
+      subDomainSettings: [
+        ...existingSettings,
+        {
+          branchName: "main",
+          prefix,
+        },
+      ],
+    });
+
+    const response = await client.send(command);
+  } catch (err) {
+    console.log("Failed to register subdomain");
+  }
+}
