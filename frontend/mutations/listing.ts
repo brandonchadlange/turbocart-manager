@@ -1,4 +1,4 @@
-import { Listing } from "@prisma/client";
+import { Listing, ListingVariant } from "@prisma/client";
 import axios from "axios";
 
 export function makeCreateListing(props: {
@@ -59,6 +59,23 @@ export function makeDeleteListing(props: {
       const response = await axios.delete(`/api/listing/${listingId}`);
 
       props.onSuccess(response.data);
+    } catch (err: any) {
+      props.onUnexpectedError(err.response);
+    }
+  };
+}
+
+export function makeDeleteListingVariant(props: {
+  onSuccess(): void;
+  onUnexpectedError(response: any): void;
+}) {
+  return async function deleteListing(listingId: string, variantId: string) {
+    try {
+      const response = await axios.delete(
+        `/api/listing/${listingId}/variant?id=${variantId}`
+      );
+
+      props.onSuccess();
     } catch (err: any) {
       props.onUnexpectedError(err.response);
     }

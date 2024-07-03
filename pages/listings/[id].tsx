@@ -1,7 +1,10 @@
 import ApplicationLayout from "@/components/layouts/application";
 import Money from "@/components/money";
 import { makeUpdateListingCategories } from "@/frontend/mutations/category";
-import { makeUpdateListingDetail } from "@/frontend/mutations/listing";
+import {
+  makeDeleteListingVariant,
+  makeUpdateListingDetail,
+} from "@/frontend/mutations/listing";
 import { makeUpdateListingVariantEnabled } from "@/frontend/mutations/listing-variant";
 import queries from "@/frontend/queries";
 import { useOrganization } from "@clerk/nextjs";
@@ -29,6 +32,7 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useListState } from "@mantine/hooks";
+import { useModals } from "@mantine/modals";
 import { showNotification } from "@mantine/notifications";
 import { ListingVariant } from "@prisma/client";
 import { IconGripVertical, IconQuestionCircle, IconTrash } from "@tabler/icons";
@@ -266,6 +270,7 @@ const Variants = ({ listing }: { listing?: ListingDetail }) => {
       additionalFee: 0,
     },
   });
+  const modals = useModals();
 
   const onModalClose = () => {
     setModalOpened(false);
@@ -340,6 +345,35 @@ const Variants = ({ listing }: { listing?: ListingDetail }) => {
     listingVariantsQuery.refetch();
   };
 
+  const deleteListingVariant = makeDeleteListingVariant({
+    onSuccess() {
+      showNotification({
+        title: "Success",
+        message: "Variant successfully deleted",
+        color: "green",
+      });
+    },
+    onUnexpectedError(response) {
+      showNotification({
+        title: "Error",
+        message: "Failed to delete variant",
+        color: "red",
+      });
+    },
+  });
+
+  const promptForVariantDelete = (variant: ListingVariant) => {
+    modals.openConfirmModal({
+      centered: true,
+      title: "Are you sure?",
+      children: <Text size="sm">Click confirm to delete variant.</Text>,
+      labels: { confirm: "Confirm", cancel: "Cancel" },
+      onConfirm() {
+        deleteListingVariant(listing!.id, variant.id);
+      },
+    });
+  };
+
   return (
     <div>
       <Flex justify="space-between" align="end">
@@ -390,13 +424,23 @@ const Variants = ({ listing }: { listing?: ListingDetail }) => {
                                     </Badge>
                                   )}
                                 </Flex>
-                                <Button
-                                  onClick={() => onVariantManage(variant)}
-                                  size="xs"
-                                  variant="default"
-                                >
-                                  Manage
-                                </Button>
+
+                                <Flex gap="sm">
+                                  <Button
+                                    onClick={() => onVariantManage(variant)}
+                                    size="xs"
+                                    variant="default"
+                                  >
+                                    Manage
+                                  </Button>
+                                  <ActionIcon
+                                    onClick={() =>
+                                      promptForVariantDelete(variant)
+                                    }
+                                  >
+                                    <IconTrash />
+                                  </ActionIcon>
+                                </Flex>
                               </Flex>
                             </Card>
                           </div>

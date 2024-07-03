@@ -12,6 +12,7 @@ export default RouteHandler({
         NOT: {
           isDefault: true,
         },
+        deleted: false,
       },
       orderBy: {
         position: "desc",
@@ -40,5 +41,46 @@ export default RouteHandler({
     });
 
     res.status(HttpStatusCode.Created).send(newVariant);
+  },
+  async DELETE(req, res) {
+    const listingId = req.query.id as string;
+
+    const variant = await prismaClient.listingVariant.findFirst({
+      where: {
+        listingId: listingId,
+      },
+      include: {
+        listing: {
+          include: {
+            variants: true,
+          },
+        },
+      },
+    });
+
+    if (!variant) {
+      return res.status(HttpStatusCode.BadRequest).send({
+        code: "VARIANT_NOT_FOUND",
+        message: "Variant does not exist",
+      });
+    }
+
+    if (variant.isDefault) {
+      return res.status(HttpStatusCode.BadRequest).send({
+        code: "CANNOT_DELETE_DEFAULT_VARIANT",
+        message: "Cannot delete default variant",
+      });
+    }
+
+    await prismaClient.listingVariant.update({
+      where: {
+        id: listingId,
+      },
+      data: {
+        deleted: true,
+      },
+    });
+
+    res.send(true);
   },
 });
