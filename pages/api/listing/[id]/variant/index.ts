@@ -65,13 +65,6 @@ export default RouteHandler({
       });
     }
 
-    if (variant.isDefault) {
-      return res.status(HttpStatusCode.BadRequest).send({
-        code: "CANNOT_DELETE_DEFAULT_VARIANT",
-        message: "Cannot delete default variant",
-      });
-    }
-
     await prismaClient.listingVariant.update({
       where: {
         id: listingId,
