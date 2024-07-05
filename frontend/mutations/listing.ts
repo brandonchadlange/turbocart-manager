@@ -72,7 +72,7 @@ export function makeDeleteListingVariant(props: {
   return async function deleteListing(listingId: string, variantId: string) {
     try {
       const response = await axios.delete(
-        `/api/listing/${listingId}/variant?id=${variantId}`
+        `/api/listing/${listingId}/variant?variantId=${variantId}`
       );
 
       props.onSuccess();

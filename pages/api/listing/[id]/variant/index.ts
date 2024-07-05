@@ -43,11 +43,11 @@ export default RouteHandler({
     res.status(HttpStatusCode.Created).send(newVariant);
   },
   async DELETE(req, res) {
-    const listingId = req.query.id as string;
+    const variantId = req.query.variantId as string;
 
     const variant = await prismaClient.listingVariant.findFirst({
       where: {
-        listingId: listingId,
+        id: variantId,
       },
       include: {
         listing: {
@@ -67,7 +67,7 @@ export default RouteHandler({
 
     await prismaClient.listingVariant.update({
       where: {
-        id: listingId,
+        id: variantId,
       },
       data: {
         deleted: true,

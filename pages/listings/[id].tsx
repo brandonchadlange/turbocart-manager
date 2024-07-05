@@ -352,6 +352,8 @@ const Variants = ({ listing }: { listing?: ListingDetail }) => {
         message: "Variant successfully deleted",
         color: "green",
       });
+
+      listingVariantsQuery.refetch();
     },
     onUnexpectedError(response) {
       showNotification({
