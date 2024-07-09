@@ -39,6 +39,16 @@ export default RouteHandler({
       ...req.body,
     });
 
+    await prismaClient.listingVariant.updateMany({
+      where: {
+        listingId,
+        isDefault: true,
+      },
+      data: {
+        name: req.body.name,
+      },
+    });
+
     res.send(true);
   },
   async DELETE(req, res) {
