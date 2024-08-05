@@ -18,7 +18,8 @@ const ProductUtilizationReport = () => {
   const columns: DataTableColumn[] = [
     {
       heading: "Menu Item",
-      component: (data) => data.product.name,
+      component: (data) =>
+        `${data.product.listing.name} - ${data.product.name}`,
     },
     {
       heading: "Amount",

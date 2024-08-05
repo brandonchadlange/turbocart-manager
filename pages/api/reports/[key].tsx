@@ -50,6 +50,9 @@ const getProductUtilizationReport = async (
         in: variantIdList,
       },
     },
+    include: {
+      listing: true,
+    },
   });
 
   productsPerDay.forEach((e) => {
