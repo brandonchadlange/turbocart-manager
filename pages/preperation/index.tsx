@@ -63,7 +63,9 @@ const ProductPreperationReport = () => {
     {
       heading: "Menu Item",
       component: (data) =>
-        `${data.product.listing.name} - ${data.product.name}`,
+        data.product.isDefault
+          ? data.product.name
+          : `${data.product.listing.name} - ${data.product.name}`,
     },
     {
       heading: "Amount",
