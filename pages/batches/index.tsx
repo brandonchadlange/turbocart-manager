@@ -128,6 +128,11 @@ const Batches = () => {
       `
       );
 
+      const notes = `
+        <div style="height: 10px;"></div>
+        <p ${textStyle}>Note: ${batch.Order.notes}</p>
+      `;
+
       tmpElement.innerHTML = `
         <p ${textStyle}>Order #: ${batch.orderId}</p>
         <p ${textStyle}>Student: ${batch.studentFirstName} ${
@@ -137,6 +142,7 @@ const Batches = () => {
         <div style="height: 10px;"></div>
         <p ${textStyle}>Order:</p>
         ${orderItems.join("")}
+        ${batch.Order.notes.length ? notes : ""}
       `;
 
       grid.appendChild(tmpElement);
