@@ -13,6 +13,7 @@ export default RouteHandler({
       where: {
         merchantId: orgSlug!,
         isComplete: fetchComplete,
+        isPaid: true,
       },
       orderBy: {
         createdAt: "desc",

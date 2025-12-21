@@ -35,6 +35,7 @@ model Order {
   serviceFeeInCents Int          @default(0)
   isComplete        Boolean      @default(false)
   notes             String?
+  isPaid            Boolean      @default(false)
   Merchant          Merchant     @relation(fields: [merchantId], references: [id])
   OrderBatch        OrderBatch[]
   OrderItem         OrderItem[]
@@ -51,8 +52,8 @@ model OrderItem {
   orderBatchId        String
   packed              Boolean    @default(false)
   variantId           String
-  OrderBatch          OrderBatch @relation(fields: [orderBatchId], references: [id])
-  order               Order      @relation(fields: [orderId], references: [id])
+  OrderBatch          OrderBatch @relation(fields: [orderBatchId], references: [id], onDelete: Cascade)
+  order               Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId], map: "OrderItem_orderId_fkey")
   @@index([orderBatchId], map: "OrderItem_orderBatchId_fkey")
@@ -82,6 +83,7 @@ model Session {
   customerFirstName String    @default("")
   customerLastName  String    @default("")
   rememberDetails   Boolean   @default(false)
+  userAgent         String    @default("")
   Basket            Basket[]
   Student           Student[]
 }
@@ -111,7 +113,7 @@ model OrderBatch {
   studentLastName  String
   studentGrade     String
   fulfilled        Boolean     @default(false)
-  Order            Order       @relation(fields: [orderId], references: [id])
+  Order            Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
   OrderItem        OrderItem[]
 
   @@index([orderId], map: "OrderBatch_orderId_fkey")
@@ -191,8 +193,8 @@ model ListingVariant {
   position             Int     @default(-1)
   amountInStock        Int     @default(0)
   isOutOfStock         Boolean @default(false)
-  listing              Listing @relation(fields: [listingId], references: [id])
   deleted              Boolean @default(false)
+  listing              Listing @relation(fields: [listingId], references: [id])
 
   @@index([listingId], map: "ListingVariant_listingId_fkey")
 }

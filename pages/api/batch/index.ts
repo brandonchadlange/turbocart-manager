@@ -20,6 +20,7 @@ export default RouteHandler({
       where: {
         Order: {
           merchantId: orgSlug!,
+          isPaid: true,
         },
         dateId: dateId,
         menuId: menuId,
