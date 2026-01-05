@@ -34,6 +34,7 @@ const getProductUtilizationReport = async (
     where: {
       order: {
         merchantId: orgSlug,
+        isPaid: true,
       },
       OrderBatch: {
         dateId,
